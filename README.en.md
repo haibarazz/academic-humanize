@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Academic Humanize banner" width="100%">
+  <img src="assets/hero_generated.png" alt="Academic Humanize banner" width="100%">
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ Hard rules : preserve meaning, numbers, citations, terminology, conclusions, and
 ```
 
 <p align="center">
-  <img src="assets/pipeline.svg" alt="Academic Humanize pipeline" width="100%">
+  <img src="assets/training_pipeline_generated.png" alt="Academic Humanize training pipeline" width="100%">
 </p>
 
 ## Project Highlights
@@ -65,7 +65,7 @@ This project focuses on a narrower and harder problem: reducing AI writing trace
 - A transferable data construction recipe: if you have AI-like inputs and human references, the pipeline can be adapted to other academic-writing scenarios.
 
 <p align="center">
-  <img src="assets/technical_stack.svg" alt="Academic Humanize technical stack" width="100%">
+  <img src="assets/visual_overview_generated.png" alt="Academic Humanize visual overview" width="100%">
 </p>
 
 ## Technical Pipeline
@@ -116,10 +116,6 @@ rejected = DPO-v1 model prediction
 ```
 
 The rejected response is now closer to the model's current capability boundary, giving a finer preference signal. In the current experiments, DPO-v2 recovers more semantic fidelity while retaining most of the judge preference gain.
-
-<p align="center">
-  <img src="assets/preference_loop.svg" alt="SPIN-style preference tuning loop" width="100%">
-</p>
 
 ## Example
 
@@ -174,17 +170,9 @@ Prompts are treated as versioned experimental assets, not throwaway strings:
 - `evaluation/judge/prompts_fast.md`: compact judge prompt used for full-scale evaluation.
 - `scripts/dpo/prompt.md`: optional controlled rejected-candidate prompt for generating AI-like but semantically close DPO negatives.
 
-<p align="center">
-  <img src="assets/prompt_system.svg" alt="Prompt assets for Academic Humanize" width="100%">
-</p>
-
 ## Results
 
 Held-out validation set: 346 Academic Humanize paragraphs. Judge model: `deepseek-v4-flash` with `evaluation/judge/prompts_fast.md`.
-
-<p align="center">
-  <img src="assets/results.svg" alt="SFT DPO result trade-off" width="100%">
-</p>
 
 ### Automatic Metrics
 
