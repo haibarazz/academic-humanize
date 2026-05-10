@@ -30,6 +30,22 @@ Hard rules : preserve meaning, numbers, citations, terminology, conclusions, and
   <img src="assets/pipeline.svg" alt="Academic Humanize pipeline" width="100%">
 </p>
 
+## Project Highlights
+
+- **Local 7B post-training loop**: QLoRA SFT, SPIN-style DPO, and iterative DPO on Qwen2.5-7B-Instruct, not just API prompting.
+- **Sharper task definition**: academic AI-style reduction is decomposed into AI-like draft construction, semantic fidelity, terminology preservation, naturalness, and edit value.
+- **Low-cost preference data**: current model outputs become rejected responses, while human references become chosen responses.
+- **Two-layer evaluation**: BERTScore-F1, chrF++, BLEU, TER, format diagnostics, and a six-dimensional LLM-as-Judge rubric.
+- **Comparable baselines**: SFT, DPO-v1, DPO-v2, and multiple API models are evaluated under the same pipeline.
+
+## What I Built
+
+- Designed the Academic Humanize V2 data format: `instruction + AI-like input -> human reference output`.
+- Implemented QLoRA SFT training, LoRA prediction, API baseline prediction, resume support, and concurrent API calls.
+- Built the SPIN-style DPO pair construction flow and completed the DPO-v1 and iterative DPO-v2 training loop.
+- Built the automatic metrics and LLM-as-Judge evaluation stack with fixed prompts and six scoring dimensions.
+- Packaged the open-source version with toy examples, configs, training scripts, evaluation scripts, and README visuals.
+
 ## Why this project
 
 General-purpose LLMs can make academic text more fluent, but they often introduce three problems:
@@ -104,6 +120,24 @@ The rejected response is now closer to the model's current capability boundary, 
 <p align="center">
   <img src="assets/preference_loop.svg" alt="SPIN-style preference tuning loop" width="100%">
 </p>
+
+## Example
+
+The following example is from the toy data in [data/examples/sample_train.json](data/examples/sample_train.json).
+
+**AI-like input**
+
+```text
+The proposed framework not only facilitates the integration of heterogeneous signals, but also leverages a robust optimization process to enhance prediction stability across 12 experimental settings.
+```
+
+**Humanized reference**
+
+```text
+The proposed framework integrates heterogeneous signals and uses robust optimization to improve prediction stability across 12 experimental settings.
+```
+
+The rewrite removes common AI-style patterns such as `not only...but also...`, `facilitates`, `leverages`, and `enhance`, while preserving key information such as `heterogeneous signals`, `robust optimization`, and `12 experimental settings`.
 
 ## Evaluation
 
@@ -211,6 +245,14 @@ academic-humanize/
 ```
 
 The full paper corpus, generated training data, prediction files, judge outputs, checkpoints, and model weights are not included. The repository contains toy examples and reproducible code only.
+
+## Limitations
+
+- The full paper corpus, training data, and checkpoints are not released; this repository provides toy examples and reproducible scripts.
+- LLM-as-Judge is not a replacement for human evaluation, so automatic semantic metrics are kept for cross-checking.
+- The current validation set contains 346 Academic Humanize samples; new domains or writing styles should be re-evaluated.
+- DPO improves preference scores but can introduce semantic drift. DPO-v2 mitigates this risk but does not eliminate it.
+- API baselines can change with provider routing, model versions, and serving behavior, so they should be treated as reference points.
 
 ## Quick Start
 
