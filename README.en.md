@@ -18,7 +18,7 @@
 
 Academic Humanize is a post-training project for academic English rewriting. Its goal is to turn "AI-style reduction" into a trainable, optimizable, and measurable engineering pipeline.
 
-It is not just a prompt-based polishing script. The project covers data construction, QLoRA SFT, SPIN-style DPO, iterative DPO, automatic metrics, and LLM-as-Judge evaluation.
+The project covers data construction, QLoRA SFT, SPIN-style DPO, iterative DPO, automatic metrics, and LLM-as-Judge evaluation.
 
 ```text
 Input      : an over-polished, formulaic, AI-like academic paragraph
@@ -32,25 +32,25 @@ Hard rules : preserve meaning, numbers, citations, terminology, conclusions, and
 
 ## Project Highlights
 
-- **Local 7B post-training loop**: QLoRA SFT, SPIN-style DPO, and iterative DPO on Qwen2.5-7B-Instruct, not just API prompting.
+- **Local 7B post-training loop**: QLoRA SFT, SPIN-style DPO, and iterative DPO on Qwen2.5-7B-Instruct, with API baselines for comparison.
 - **Sharper task definition**: academic AI-style reduction is decomposed into AI-like draft construction, semantic fidelity, terminology preservation, naturalness, and edit value.
 - **Low-cost preference data**: current model outputs become rejected responses, while human references become chosen responses.
 - **Two-layer evaluation**: BERTScore-F1, chrF++, BLEU, TER, format diagnostics, and a six-dimensional LLM-as-Judge rubric.
 - **Comparable baselines**: SFT, DPO-v1, DPO-v2, and multiple API models are evaluated under the same pipeline.
 
-## What I Built
+## My Contributions
 
-- Designed the Academic Humanize V2 data format: `instruction + AI-like input -> human reference output`.
-- Implemented QLoRA SFT training, LoRA prediction, API baseline prediction, resume support, and concurrent API calls.
-- Built the SPIN-style DPO pair construction flow and completed the DPO-v1 and iterative DPO-v2 training loop.
-- Built the automatic metrics and LLM-as-Judge evaluation stack with fixed prompts and six scoring dimensions.
-- Packaged the open-source version with toy examples, configs, training scripts, evaluation scripts, and README visuals.
+- I designed the Academic Humanize V2 data format: `instruction + AI-like input -> human reference output`.
+- I implemented QLoRA SFT training, LoRA prediction, API baseline prediction, resume support, and concurrent API calls.
+- I built the SPIN-style DPO pair construction flow and completed the DPO-v1 and iterative DPO-v2 training loop.
+- I built the automatic metrics and LLM-as-Judge evaluation stack with fixed prompts and six scoring dimensions.
+- I packaged the open-source version with toy examples, configs, training scripts, evaluation scripts, and README visuals.
 
 ## Why this project
 
 General-purpose LLMs can make academic text more fluent, but they often introduce three problems:
 
-- More AI-like wording: frequent use of words such as `pivotal`, `underscore`, and templates such as `not only...but also...`.
+- More AI-like wording: frequent use of words such as `pivotal`, `underscore`, and formulaic paired clauses.
 - Unstable semantics: claims, numeric details, terminology, citations, or logical strength may change during polishing.
 - Weak evaluation signals: BLEU, chrF, and BERTScore measure reference similarity, but they do not directly answer whether the rewrite reads like human scholarly English.
 
@@ -74,7 +74,7 @@ The core contribution is to decompose "AI-style reduction" into four operational
 
 ### 1. AH V2 data construction
 
-Training pairs are not simple "raw text -> polished text" pairs. Each sample has:
+Training pairs follow an "AI-like draft -> human reference" structure. Each sample has:
 
 ```text
 input  = an AI-like academic draft
@@ -124,20 +124,20 @@ The following example is from the toy data in [data/examples/sample_train.json](
 **AI-like input**
 
 ```text
-The proposed framework not only facilitates the integration of heterogeneous signals, but also leverages a robust optimization process to enhance prediction stability across 12 experimental settings.
+This study endeavors to explore the multifaceted role of adaptive feedback mechanisms in online learning environments. The results underscore the pivotal importance of personalized intervention for improving student engagement.
 ```
 
 **Humanized reference**
 
 ```text
-The proposed framework integrates heterogeneous signals and uses robust optimization to improve prediction stability across 12 experimental settings.
+This study examines how adaptive feedback mechanisms support online learning. The results show that personalized intervention can improve student engagement.
 ```
 
-The rewrite removes common AI-style patterns such as `not only...but also...`, `facilitates`, `leverages`, and `enhance`, while preserving key information such as `heterogeneous signals`, `robust optimization`, and `12 experimental settings`.
+The rewrite removes common AI-style markers such as `endeavors`, `multifaceted`, `underscore`, and `pivotal`, while preserving key information such as `adaptive feedback mechanisms`, `online learning environments`, and `student engagement`.
 
 ## Evaluation
 
-The project uses two layers of evaluation instead of relying on one score.
+The project uses two layers of evaluation to cover semantic fidelity and subjective writing quality.
 
 ### Automatic semantic metrics
 
@@ -160,11 +160,11 @@ The judge uses a fixed prompt and six fixed dimensions, producing a total score 
 | naturalness | 0-2 | Reads like natural scholarly English |
 | semantic faithfulness | 0-2 | Preserves meaning, data, and logic |
 | terminology accuracy | 0-1 | Preserves and uses domain terms correctly |
-| edit value | 0-1 | Improves the input rather than making trivial edits |
+| edit value | 0-1 | Measures whether the rewrite provides a meaningful improvement |
 
 ## Prompt Assets
 
-Prompts are treated as versioned experimental assets, not throwaway strings:
+Prompts are maintained as versioned experimental assets:
 
 - `evaluation/judge/prompts.md`: full judge prompt with the AI-writing word bank, structural patterns, and scoring rubric.
 - `evaluation/judge/prompts_fast.md`: compact judge prompt used for full-scale evaluation.
