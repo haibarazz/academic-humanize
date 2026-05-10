@@ -48,6 +48,10 @@ This project focuses on a narrower and harder problem: reducing AI writing trace
 - API baseline comparisons for understanding the gap between local 7B LoRA adapters and proprietary models.
 - A transferable data construction recipe: if you have AI-like inputs and human references, the pipeline can be adapted to other academic-writing scenarios.
 
+<p align="center">
+  <img src="assets/technical_stack.svg" alt="Academic Humanize technical stack" width="100%">
+</p>
+
 ## Technical Pipeline
 
 The core contribution is to decompose "AI-style reduction" into four operational modules.
@@ -97,6 +101,10 @@ rejected = DPO-v1 model prediction
 
 The rejected response is now closer to the model's current capability boundary, giving a finer preference signal. In the current experiments, DPO-v2 recovers more semantic fidelity while retaining most of the judge preference gain.
 
+<p align="center">
+  <img src="assets/preference_loop.svg" alt="SPIN-style preference tuning loop" width="100%">
+</p>
+
 ## Evaluation
 
 The project uses two layers of evaluation instead of relying on one score.
@@ -123,6 +131,18 @@ The judge uses a fixed prompt and six fixed dimensions, producing a total score 
 | semantic faithfulness | 0-2 | Preserves meaning, data, and logic |
 | terminology accuracy | 0-1 | Preserves and uses domain terms correctly |
 | edit value | 0-1 | Improves the input rather than making trivial edits |
+
+## Prompt Assets
+
+Prompts are treated as versioned experimental assets, not throwaway strings:
+
+- `evaluation/judge/prompts.md`: full judge prompt with the AI-writing word bank, structural patterns, and scoring rubric.
+- `evaluation/judge/prompts_fast.md`: compact judge prompt used for full-scale evaluation.
+- `scripts/dpo/prompt.md`: optional controlled rejected-candidate prompt for generating AI-like but semantically close DPO negatives.
+
+<p align="center">
+  <img src="assets/prompt_system.svg" alt="Prompt assets for Academic Humanize" width="100%">
+</p>
 
 ## Results
 

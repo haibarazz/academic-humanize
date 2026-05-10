@@ -1,0 +1,53 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Academic Humanize technical stack</title>
+  <desc id="desc">Technical stack covering data construction, post-training, preference optimization, and evaluation.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#101820"/>
+      <stop offset="0.56" stop-color="#12343B"/>
+      <stop offset="1" stop-color="#2D4F44"/>
+    </linearGradient>
+    <linearGradient id="line" x1="100" y1="210" x2="1100" y2="210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2C14E"/>
+      <stop offset="1" stop-color="#6BCB77"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="420" rx="30" fill="url(#bg)"/>
+  <text x="58" y="68" fill="#F7F3E3" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-weight="700">Academic Humanization Stack</text>
+  <text x="60" y="102" fill="#C8D6CE" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="18">Data design, local post-training, preference tuning, and quality evaluation in one loop.</text>
+  <path d="M126 214H1074" stroke="url(#line)" stroke-width="5" stroke-linecap="round" opacity="0.82"/>
+  <g font-family="Avenir Next, Helvetica, Arial, sans-serif">
+    <g transform="translate(72 150)">
+      <rect width="220" height="150" rx="24" fill="#F7F3E3" fill-opacity="0.10" stroke="#F7F3E3" stroke-opacity="0.24"/>
+      <circle cx="42" cy="46" r="16" fill="#F2C14E"/>
+      <text x="70" y="52" fill="#F7F3E3" font-size="22" font-weight="800">Data Design</text>
+      <text x="30" y="88" fill="#DDE7DA" font-size="16">AI-like draft</text>
+      <text x="30" y="114" fill="#DDE7DA" font-size="16">Human reference</text>
+      <text x="30" y="138" fill="#C8D6CE" font-size="13">meaning-preserving pairs</text>
+    </g>
+    <g transform="translate(352 150)">
+      <rect width="220" height="150" rx="24" fill="#F7F3E3" fill-opacity="0.10" stroke="#F7F3E3" stroke-opacity="0.24"/>
+      <circle cx="42" cy="46" r="16" fill="#6BCB77"/>
+      <text x="70" y="52" fill="#F7F3E3" font-size="22" font-weight="800">SFT Adapter</text>
+      <text x="30" y="88" fill="#DDE7DA" font-size="16">Qwen2.5 7B base</text>
+      <text x="30" y="114" fill="#DDE7DA" font-size="16">QLoRA training</text>
+      <text x="30" y="138" fill="#C8D6CE" font-size="13">task format and style</text>
+    </g>
+    <g transform="translate(632 150)">
+      <rect width="220" height="150" rx="24" fill="#F7F3E3" fill-opacity="0.10" stroke="#F7F3E3" stroke-opacity="0.24"/>
+      <circle cx="42" cy="46" r="16" fill="#F2C14E"/>
+      <text x="70" y="52" fill="#F7F3E3" font-size="22" font-weight="800">Preference Fit</text>
+      <text x="30" y="88" fill="#DDE7DA" font-size="16">chosen reference</text>
+      <text x="30" y="114" fill="#DDE7DA" font-size="16">model rejected</text>
+      <text x="30" y="138" fill="#C8D6CE" font-size="13">SPIN-style DPO loop</text>
+    </g>
+    <g transform="translate(912 150)">
+      <rect width="220" height="150" rx="24" fill="#F7F3E3" fill-opacity="0.10" stroke="#F7F3E3" stroke-opacity="0.24"/>
+      <circle cx="42" cy="46" r="16" fill="#6BCB77"/>
+      <text x="70" y="52" fill="#F7F3E3" font-size="22" font-weight="800">Quality Gate</text>
+      <text x="30" y="88" fill="#DDE7DA" font-size="16">semantic metrics</text>
+      <text x="30" y="114" fill="#DDE7DA" font-size="16">six-axis judge</text>
+      <text x="30" y="138" fill="#C8D6CE" font-size="13">faithfulness plus style</text>
+    </g>
+  </g>
+</svg>

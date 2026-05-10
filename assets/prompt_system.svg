@@ -1,0 +1,32 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Prompt assets for Academic Humanize</title>
+  <desc id="desc">Prompt assets used for generation, DPO rejected candidates, and LLM-as-Judge evaluation.</desc>
+  <rect width="1200" height="420" rx="30" fill="#F7F3E3"/>
+  <circle cx="1040" cy="72" r="120" fill="#6BCB77" opacity="0.18"/>
+  <circle cx="140" cy="360" r="160" fill="#F2C14E" opacity="0.18"/>
+  <text x="58" y="66" fill="#101820" font-family="Georgia, 'Times New Roman', serif" font-size="38" font-weight="700">Versioned Prompt System</text>
+  <text x="60" y="102" fill="#41534A" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="18">Task instructions, rejected-sample generation, and judge rubrics are tracked as assets.</text>
+  <g font-family="Avenir Next, Helvetica, Arial, sans-serif">
+    <g transform="translate(68 156)">
+      <rect width="316" height="180" rx="24" fill="#101820"/>
+      <text x="28" y="44" fill="#F2C14E" font-size="22" font-weight="800">Rewrite Instruction</text>
+      <text x="28" y="82" fill="#DDE7DA" font-size="16">Preserve meaning, numbers,</text>
+      <text x="28" y="108" fill="#DDE7DA" font-size="16">citations, terminology, and logic.</text>
+      <text x="28" y="146" fill="#C8D6CE" font-size="13">Used by local and API prediction scripts</text>
+    </g>
+    <g transform="translate(442 156)">
+      <rect width="316" height="180" rx="24" fill="#12343B"/>
+      <text x="28" y="44" fill="#6BCB77" font-size="22" font-weight="800">Rejected Generator</text>
+      <text x="28" y="82" fill="#DDE7DA" font-size="16">Controlled AI-like style,</text>
+      <text x="28" y="108" fill="#DDE7DA" font-size="16">not broken English.</text>
+      <text x="28" y="146" fill="#C8D6CE" font-size="13">scripts/dpo/prompt.md</text>
+    </g>
+    <g transform="translate(816 156)">
+      <rect width="316" height="180" rx="24" fill="#2D4F44"/>
+      <text x="28" y="44" fill="#F2C14E" font-size="22" font-weight="800">Quality Judge</text>
+      <text x="28" y="82" fill="#DDE7DA" font-size="16">Six fixed dimensions for</text>
+      <text x="28" y="108" fill="#DDE7DA" font-size="16">style and semantic safety.</text>
+      <text x="28" y="146" fill="#C8D6CE" font-size="13">evaluation/judge/prompts_fast.md</text>
+    </g>
+  </g>
+</svg>
