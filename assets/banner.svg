@@ -1,0 +1,46 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Academic Humanize</title>
+  <desc id="desc">Banner for Academic Humanize, a pipeline for SFT, DPO and evaluation of academic rewriting models.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#101820"/>
+      <stop offset="0.54" stop-color="#12343B"/>
+      <stop offset="1" stop-color="#2D4F44"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="180" y1="80" x2="1020" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F2C14E"/>
+      <stop offset="1" stop-color="#6BCB77"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="360" rx="34" fill="url(#bg)"/>
+  <circle cx="1025" cy="74" r="104" fill="#F2C14E" opacity="0.16" filter="url(#soft)"/>
+  <circle cx="150" cy="300" r="140" fill="#6BCB77" opacity="0.12" filter="url(#soft)"/>
+  <path d="M96 94C195 62 278 73 369 120C474 174 560 176 658 128C785 66 910 74 1084 142" stroke="url(#accent)" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+  <path d="M96 252C207 219 310 230 407 266C501 301 591 299 680 258C804 202 937 208 1084 255" stroke="#F7F3E3" stroke-width="2" stroke-linecap="round" opacity="0.32"/>
+  <g transform="translate(86 74)">
+    <rect x="0" y="0" width="196" height="52" rx="26" fill="#F7F3E3" opacity="0.12"/>
+    <text x="24" y="34" fill="#F7F3E3" font-family="Avenir Next, Georgia, serif" font-size="22" font-weight="600">SFT + DPO</text>
+  </g>
+  <text x="86" y="176" fill="#F7F3E3" font-family="Georgia, 'Times New Roman', serif" font-size="66" font-weight="700" letter-spacing="-1.5">Academic Humanize</text>
+  <text x="90" y="222" fill="#DDE7DA" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="25" font-weight="500">Reducing AI-like academic prose while preserving meaning</text>
+  <g transform="translate(90 265)" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="18" font-weight="600">
+    <rect x="0" y="0" width="124" height="38" rx="19" fill="#F2C14E" opacity="0.95"/>
+    <text x="24" y="25" fill="#101820">QLoRA</text>
+    <rect x="142" y="0" width="108" height="38" rx="19" fill="#6BCB77" opacity="0.95"/>
+    <text x="171" y="25" fill="#101820">DPO</text>
+    <rect x="268" y="0" width="170" height="38" rx="19" fill="#F7F3E3" opacity="0.95"/>
+    <text x="294" y="25" fill="#101820">LLM Judge</text>
+    <rect x="456" y="0" width="160" height="38" rx="19" fill="#DDE7DA" opacity="0.95"/>
+    <text x="485" y="25" fill="#101820">Metrics</text>
+  </g>
+  <g transform="translate(825 92)">
+    <rect x="0" y="0" width="268" height="168" rx="24" fill="#F7F3E3" opacity="0.10" stroke="#F7F3E3" stroke-opacity="0.24"/>
+    <text x="26" y="42" fill="#F7F3E3" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="18" font-weight="700">Best local trade-off</text>
+    <text x="26" y="82" fill="#6BCB77" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="38" font-weight="800">DPO-v2</text>
+    <text x="26" y="118" fill="#DDE7DA" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="17">Judge Norm 0.922</text>
+    <text x="26" y="145" fill="#DDE7DA" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="17">BERTScore-F1 0.9709</text>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+# AutoDL / CUDA training environment.
+# Prefer an AutoDL PyTorch image with torch already installed.
+transformers>=4.45.0
+huggingface_hub>=0.24.0
+datasets>=2.20.0
+peft>=0.13.0
+trl>=0.11.0
+bitsandbytes>=0.43.0
+accelerate>=0.33.0
+pyyaml>=6.0
+safetensors>=0.4.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+tqdm>=4.66.0
+sacrebleu>=2.4.0
+bert-score>=0.3.13
+python-dotenv>=1.0.0
+openai>=1.40.0
+requests>=2.32.0

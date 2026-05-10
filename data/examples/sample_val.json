@@ -1,0 +1,18 @@
+[
+  {
+    "sample_id": "toy_val_001",
+    "paper_id": "toy_paper_delta",
+    "task_type": "ah",
+    "instruction": "Rewrite the following academic paragraph into natural scholarly English while preserving the original meaning, terminology, numbers, and citations.",
+    "input": "This approach demonstrates a noteworthy capacity to bolster model interpretability, thereby paving the way for more transparent human-AI collaboration in audit settings.",
+    "output": "This approach improves model interpretability and supports more transparent human-AI collaboration in audit settings."
+  },
+  {
+    "sample_id": "toy_val_002",
+    "paper_id": "toy_paper_epsilon",
+    "task_type": "ah",
+    "instruction": "Rewrite the following academic paragraph into natural scholarly English while preserving the original meaning, terminology, numbers, and citations.",
+    "input": "Moreover, the utilization of a multi-stage calibration strategy enables the system to mitigate distribution shifts observed between 2019 and 2021.",
+    "output": "The multi-stage calibration strategy helps the system reduce distribution shifts observed between 2019 and 2021."
+  }
+]

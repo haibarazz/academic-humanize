@@ -1,0 +1,29 @@
+# Academic Humanize evaluation config
+# YAML provides defaults; CLI flags override these values.
+
+run:
+  # local | api
+  mode: api
+  # null lets the evaluator create a timestamped default file in results/
+  output: null
+  seed: 42
+  max_samples: null
+  dry_run: false
+  python_bin: null
+
+data:
+  val_file: cloud_data/ah_v2/val/final_val_v2.json
+
+decode:
+  max_new_tokens: 512
+  temperature: 0.0
+  top_p: 1.0
+  do_sample: false
+
+local:
+  model_path: Qwen/Qwen2.5-7B-Instruct
+  adapter_path: null
+  load_in_4bit: true
+
+api:
+  api_model: openai/gpt-4o-mini

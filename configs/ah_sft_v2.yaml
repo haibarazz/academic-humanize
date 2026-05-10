@@ -1,0 +1,38 @@
+model:
+  name_or_path: Qwen/Qwen2.5-7B-Instruct
+  load_in_4bit: true
+
+data:
+  train_file: cloud_data/ah_v2/train/final_train_v2.json
+  val_file: cloud_data/ah_v2/val/final_val_v2.json
+  max_seq_len: 2048
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+
+train:
+  num_train_epochs: 2
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 0.0001
+  warmup_ratio: 0.03
+  lr_scheduler_type: linear
+  save_steps: 100
+  logging_steps: 5
+  logging_first_step: true
+  save_total_limit: 2
+  evaluation_strategy: steps
+  eval_steps: 100
+  early_stopping_enabled: true
+  early_stopping_patience: 2
+  early_stopping_threshold: 0.0
+
+output:
+  output_dir: ./checkpoints/ah_sft_v2
+
+runtime:
+  seed: 42
+  max_new_tokens: 512

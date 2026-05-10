@@ -1,0 +1,9 @@
+python-dotenv>=1.0.0
+openai>=1.40.0
+pyyaml>=6.0
+tqdm>=4.66.0
+sacrebleu>=2.4.0
+bert-score>=0.3.13
+jsonlines>=4.0.0
+
+requests>=2.32.0

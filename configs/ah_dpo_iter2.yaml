@@ -1,0 +1,40 @@
+model:
+  base_model: Qwen/Qwen2.5-7B-Instruct
+  # Replace this with your completed DPO-v1 LoRA adapter directory.
+  sft_adapter_path: checkpoints_dpo/ah_v2_spin/YOUR_DPO_V1_ADAPTER
+  load_in_4bit: true
+
+data:
+  train_pair_file: cloud_data/ah_v2/dpo_iter2/train/ah_dpo_pairs_train.jsonl
+  val_pair_file: cloud_data/ah_v2/dpo_iter2/val/ah_dpo_pairs_val.jsonl
+  max_seq_len: 1024
+  max_prompt_length: 768
+
+prompt:
+  system_prompt: You are a professional academic writing assistant. Rewrite the text into natural academic English while preserving meaning.
+  require_chat_template: true
+
+train:
+  beta: 0.05
+  num_train_epochs: 1
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 0.000001
+  warmup_ratio: 0.05
+  lr_scheduler_type: cosine
+  save_steps: 50
+  logging_steps: 5
+  logging_first_step: true
+  save_total_limit: 3
+  evaluation_strategy: steps
+  eval_steps: 50
+  early_stopping_enabled: true
+  early_stopping_patience: 2
+  early_stopping_threshold: 0.0
+
+output:
+  output_dir: ./checkpoints_dpo/ah_v2_iter2
+
+runtime:
+  seed: 42

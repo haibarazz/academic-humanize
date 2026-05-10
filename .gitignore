@@ -1,0 +1,84 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+secrets/
+credentials/
+*.pem
+*.key
+
+# Jupyter / scratch
+.ipynb_checkpoints/
+*.ipynb
+
+# Private or large data
+articles/
+aritcles/
+raw_data/
+data/raw/
+data/private/
+data/generated/
+cloud_data/**/*.json
+cloud_data/**/*.jsonl
+!cloud_data/**/README.md
+
+# Generated results
+results/
+outputs/
+output/
+logs/
+runs/
+wandb/
+mlruns/
+*.log
+
+# Model files / checkpoints
+checkpoints/
+checkpoints_save/
+checkpoints_dpo/
+models/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.gguf
+*.onnx
+
+# Archives and large artifacts
+*.tar
+*.tar.gz
+*.zip
+*.7z
+*.parquet
+*.feather
+*.pkl
+*.pickle
+*.db
+*.sqlite
+*.sqlite3

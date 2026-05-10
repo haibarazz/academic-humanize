@@ -1,0 +1,26 @@
+[
+  {
+    "sample_id": "toy_001",
+    "paper_id": "toy_paper_alpha",
+    "task_type": "ah",
+    "instruction": "Rewrite the following academic paragraph into natural scholarly English while preserving the original meaning, terminology, numbers, and citations.",
+    "input": "This study endeavors to explore the multifaceted role of adaptive feedback mechanisms in online learning environments. The results underscore the pivotal importance of personalized intervention for improving student engagement.",
+    "output": "This study examines how adaptive feedback mechanisms support online learning. The results show that personalized intervention can improve student engagement."
+  },
+  {
+    "sample_id": "toy_002",
+    "paper_id": "toy_paper_beta",
+    "task_type": "ah",
+    "instruction": "Rewrite the following academic paragraph into natural scholarly English while preserving the original meaning, terminology, numbers, and citations.",
+    "input": "Taken together, these findings provide a comprehensive testament to the utility of graph-based models in capturing temporal dependencies within clinical decision-making workflows.",
+    "output": "Together, these findings show that graph-based models can capture temporal dependencies in clinical decision-making workflows."
+  },
+  {
+    "sample_id": "toy_003",
+    "paper_id": "toy_paper_gamma",
+    "task_type": "ah",
+    "instruction": "Rewrite the following academic paragraph into natural scholarly English while preserving the original meaning, terminology, numbers, and citations.",
+    "input": "The proposed framework not only facilitates the integration of heterogeneous signals, but also leverages a robust optimization process to enhance prediction stability across 12 experimental settings.",
+    "output": "The proposed framework integrates heterogeneous signals and uses robust optimization to improve prediction stability across 12 experimental settings."
+  }
+]
