@@ -1,20 +1,22 @@
 <svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Result trade-off chart</title>
-  <desc id="desc">Comparison of local SFT, DPO-v1 and DPO-v2 on judge score and BERTScore.</desc>
+  <desc id="desc">Comparison of local post-trained adapters on human-likeness and semantic fidelity.</desc>
   <rect width="1200" height="360" rx="30" fill="#101820"/>
   <text x="58" y="58" fill="#F7F3E3" font-family="Georgia, 'Times New Roman', serif" font-size="36" font-weight="700">Local Adapter Trade-off</text>
-  <text x="60" y="90" fill="#C8D6CE" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="17">DPO-v2 keeps most judge preference gains while recovering semantic fidelity.</text>
+  <text x="60" y="90" fill="#C8D6CE" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="17">Iterative preference tuning keeps human-likeness gains while recovering semantic fidelity.</text>
   <line x1="110" y1="286" x2="1080" y2="286" stroke="#DDE7DA" stroke-opacity="0.35" stroke-width="2"/>
   <line x1="110" y1="120" x2="110" y2="286" stroke="#DDE7DA" stroke-opacity="0.35" stroke-width="2"/>
-  <text x="92" y="316" fill="#DDE7DA" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="14">BERTScore-F1</text>
-  <text x="60" y="125" fill="#DDE7DA" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="14" transform="rotate(-90 60 125)">Judge Norm</text>
+  <text x="92" y="316" fill="#DDE7DA" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="14">Semantic fidelity</text>
+  <text x="60" y="125" fill="#DDE7DA" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="14" transform="rotate(-90 60 125)">Human-likeness</text>
   <g font-family="Avenir Next, Helvetica, Arial, sans-serif" font-weight="700">
     <circle cx="945" cy="206" r="18" fill="#6BCB77"/>
     <text x="970" y="211" fill="#F7F3E3" font-size="18">SFT 0.900 / 0.9738</text>
     <circle cx="585" cy="145" r="18" fill="#F2C14E"/>
-    <text x="610" y="150" fill="#F7F3E3" font-size="18">DPO-v1 0.924 / 0.9664</text>
+    <text x="610" y="132" fill="#F7F3E3" font-size="18">Preference stage</text>
+    <text x="610" y="156" fill="#F7F3E3" font-size="16">0.924 / 0.9664</text>
     <circle cx="800" cy="150" r="22" fill="#F7F3E3" stroke="#6BCB77" stroke-width="5"/>
-    <text x="830" y="155" fill="#F7F3E3" font-size="18">DPO-v2 0.922 / 0.9709</text>
+    <text x="830" y="137" fill="#F7F3E3" font-size="18">Iterative stage</text>
+    <text x="830" y="161" fill="#F7F3E3" font-size="16">0.922 / 0.9709</text>
   </g>
   <path d="M585 145L800 150L945 206" stroke="#F7F3E3" stroke-width="3" stroke-opacity="0.6" stroke-linecap="round"/>
   <g fill="#C8D6CE" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="14">
