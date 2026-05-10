@@ -3,67 +3,71 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> · <a href="#实验结果">实验结果</a> · <a href="#快速开始">快速开始</a> · <a href="#复现流程">复现流程</a>
+  <a href="README.md">中文</a> · <a href="#results">Results</a> · <a href="#quick-start">Quick Start</a> · <a href="#reproduce-the-pipeline">Reproduce</a>
 </p>
 
 <p align="center">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.8%2B-12343B">
   <img alt="Model" src="https://img.shields.io/badge/Base-Qwen2.5--7B--Instruct-2D4F44">
   <img alt="Training" src="https://img.shields.io/badge/Post--training-SFT%20%2B%20DPO-F2C14E">
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-6BCB77">
 </p>
 
 # Academic Humanize
 
-Academic Humanize 是一个面向学术英文润色的后训练与评测项目，目标是降低
-AI 味、模板感和过度润色痕迹，同时尽量保持语义、术语、数字、引用和逻辑关系不变。
+Academic Humanize is a post-training and evaluation pipeline for reducing
+AI-like academic prose while preserving meaning, terminology, numbers,
+citations, and logical relationships.
 
-核心任务：
+The core task is simple:
 
 ```text
-输入：带有 AI 味、模板化、过度正式的学术段落
-输出：更自然、更像真人学者写作的学术英文
-约束：不改变原意，不丢术语、数字、引用和结论
+Input    : an over-polished, generic, AI-like academic paragraph
+Output   : a more natural scholarly rewrite
+Constraint: preserve semantic fidelity and domain terminology
 ```
 
 <p align="center">
   <img src="assets/pipeline.svg" alt="Academic Humanize pipeline" width="100%">
 </p>
 
-## 项目动机
+## Why this project
 
-普通润色模型经常会把文本改得更流畅，但也更空泛、更模板化，甚至改变原文含义。
-这个项目关注两个目标之间的平衡：
+Academic rewriting models often improve fluency by making the text more generic,
+more formulaic, or less faithful to the original claim. This project focuses on
+the trade-off between two objectives:
 
-- 语义保真：不能改错事实、数字、术语和逻辑。
-- 去 AI 味：减少常见 AI 词汇、套话和公式化句式。
+- semantic fidelity: the rewrite should not change facts, numbers, terminology, or logic;
+- human-like academic style: the rewrite should avoid common AI lexical markers and sentence templates.
 
-## 仓库包含什么
+## What is included
 
-- `SFT/train.py`：Academic Humanize 的 QLoRA SFT 训练脚本。
-- `DPO/train_dpo.py`：从 SFT 或上一轮 DPO LoRA 继续做 DPO。
-- `evaluation/predict/predict_local_model.py`：本地模型 / LoRA 推理。
-- `evaluation/predict/predict_api.py`：API baseline 推理，支持并发和断点续跑。
-- `evaluation/metrics/compute_metrics.py`：BLEU、chrF++、TER、BERTScore 和格式诊断。
-- `evaluation/judge/llm_judge.py`：六维 LLM-as-Judge 评测。
-- `scripts/dpo/build_dpo_pairs_from_predictions.py`：SPIN 风格 DPO pair 构造。
-- `data/examples/`：用于 smoke test 的极小 toy 数据。
+- `SFT/train.py`: QLoRA SFT training for Academic Humanize pairs.
+- `DPO/train_dpo.py`: DPO training from an SFT or previous DPO LoRA adapter.
+- `evaluation/predict/predict_local_model.py`: local model / LoRA prediction.
+- `evaluation/predict/predict_api.py`: API baseline prediction with resume and concurrency.
+- `evaluation/metrics/compute_metrics.py`: BLEU, chrF++, TER, BERTScore, and format diagnostics.
+- `evaluation/judge/llm_judge.py`: six-dimension LLM-as-Judge evaluation.
+- `scripts/dpo/build_dpo_pairs_from_predictions.py`: SPIN-style DPO pair construction.
+- `data/examples/`: tiny schema-compatible examples for smoke tests.
 
-真实论文语料、完整训练数据、预测结果、judge 结果、checkpoint 和模型权重不随仓库发布。
+The full paper corpus, generated training data, predictions, judge outputs,
+checkpoints, and model weights are intentionally not included.
 
-## 方法
+## Method
 
 ### SFT
 
-SFT 数据由 AI-like draft 和 human/high-quality reference rewrite 组成：
+The SFT dataset uses pairs of AI-like academic drafts and human or high-quality
+reference rewrites:
 
 ```text
 instruction + input -> output
 ```
 
-### DPO-v1：SPIN 风格偏好训练
+### DPO-v1: SPIN-style preference training
 
-DPO-v1 用当前 SFT 模型对训练集 input 生成 response，然后构造偏好对：
+DPO-v1 uses the current SFT model to generate a response for each training
+input. The preference pair is:
 
 ```text
 prompt   = instruction + input
@@ -71,9 +75,10 @@ chosen   = human / high-quality reference
 rejected = SFT model prediction
 ```
 
-### DPO-v2：迭代 DPO
+### DPO-v2: iterative DPO
 
-DPO-v2 从 DPO-v1 出发，用更保守的超参数再做一轮：
+DPO-v2 repeats the same idea from the DPO-v1 model with more conservative
+hyperparameters:
 
 ```text
 prompt   = instruction + input
@@ -81,31 +86,32 @@ chosen   = human / high-quality reference
 rejected = DPO-v1 model prediction
 ```
 
-## 评测框架
+## Evaluation
 
-自动指标衡量 prediction 和 reference 的接近程度；LLM-as-Judge 衡量主观改写质量。
+Automatic metrics measure closeness to the held-out reference. LLM-as-Judge
+measures subjective quality with a fixed six-dimension rubric.
 
-Judge 六个维度如下：
+Judge dimensions:
 
-| 维度 | 分值 | 含义 |
+| Dimension | Range | Meaning |
 |---|---:|---|
-| lexical markers | 0-1 | 是否避免 AI 高频词和模板短语 |
-| structural patterns | 0-1 | 是否避免公式化 AI 句式 |
-| naturalness | 0-2 | 是否像自然的学术英文 |
-| semantic faithfulness | 0-2 | 是否保留原意、数据和逻辑 |
-| terminology accuracy | 0-1 | 术语是否保留且使用准确 |
-| edit value | 0-1 | 是否相比输入有实质改进 |
+| lexical markers | 0-1 | Avoids AI-style words and template phrases |
+| structural patterns | 0-1 | Avoids formulaic AI sentence structures |
+| naturalness | 0-2 | Reads like natural scholarly English |
+| semantic faithfulness | 0-2 | Preserves meaning, data, and logic |
+| terminology accuracy | 0-1 | Preserves and uses domain terms correctly |
+| edit value | 0-1 | Improves the input rather than making trivial edits |
 
-## 实验结果
+## Results
 
-验证集包含 346 条 Academic Humanize 段落。Judge 模型为 `deepseek-v4-flash`，
-prompt 使用 `evaluation/judge/prompts_fast.md`。
+Held-out validation set: 346 Academic Humanize paragraphs. Judge model:
+`deepseek-v4-flash` with `evaluation/judge/prompts_fast.md`.
 
 <p align="center">
   <img src="assets/results.svg" alt="SFT DPO result trade-off" width="100%">
 </p>
 
-### 自动指标
+### Automatic Metrics
 
 | Model | BERTScore-F1 | chrF++ | BLEU | TER | Format Violation |
 |---|---:|---:|---:|---:|---:|
@@ -131,15 +137,16 @@ prompt 使用 `evaluation/judge/prompts_fast.md`。
 | DeepSeek-v4-flash | 0.7764 | 6.211 | 0.642 | 0.627 | 1.491 | 1.682 | 0.991 | 0.777 |
 | Gemini 3.1 Flash Lite | 0.8233 | 6.587 | 0.801 | 0.786 | 1.616 | 1.572 | 0.931 | 0.882 |
 
-### 主要结论
+### Main finding
 
-SFT 在自动语义指标上最接近 reference。DPO-v1 明显提高 judge 偏好分数，
-但带来一定语义漂移。DPO-v2 恢复了大部分语义指标，同时保留了大部分偏好收益，
-因此是本项目当前本地训练模型里最好的折中版本。
+SFT preserves the reference most strongly on automatic metrics. DPO-v1 improves
+judge preference but introduces semantic drift. DPO-v2 recovers much of the
+semantic fidelity while retaining most of the preference gain, making it the
+best local trade-off among the trained adapters.
 
-## 快速开始
+## Quick Start
 
-本地 API 推理和 judge 评测：
+For local API prediction and judge evaluation:
 
 ```bash
 python -m venv .venv
@@ -148,15 +155,15 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-AutoDL / CUDA 训练环境：
+For AutoDL / CUDA training, start from a PyTorch CUDA image and install:
 
 ```bash
 pip install -r requirements_autodl.txt
 ```
 
-## 数据
+## Data
 
-仓库只包含 toy examples：
+The repository includes toy examples only:
 
 ```text
 data/examples/sample_train.json
@@ -164,7 +171,7 @@ data/examples/sample_val.json
 data/examples/sample_dpo_pairs.jsonl
 ```
 
-toy smoke test：
+For a toy smoke test:
 
 ```bash
 mkdir -p cloud_data/ah_v2/train cloud_data/ah_v2/val
@@ -172,7 +179,7 @@ cp data/examples/sample_train.json cloud_data/ah_v2/train/final_train_v2.json
 cp data/examples/sample_val.json cloud_data/ah_v2/val/final_val_v2.json
 ```
 
-## 复现流程
+## Reproduce the Pipeline
 
 ### SFT
 
@@ -180,7 +187,7 @@ cp data/examples/sample_val.json cloud_data/ah_v2/val/final_val_v2.json
 python SFT/train.py --config configs/ah_sft_v2.yaml
 ```
 
-### 本地模型推理
+### Local prediction
 
 ```bash
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python evaluation/predict/predict_local_model.py \
@@ -191,7 +198,7 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python evaluation/predict/predict_local_
   --output results/predictions/ah_sft_val_pred.json
 ```
 
-### API baseline 推理
+### API baseline prediction
 
 ```bash
 python evaluation/predict/predict_api.py \
@@ -204,7 +211,7 @@ python evaluation/predict/predict_api.py \
   --save-every 20
 ```
 
-### 计算 metrics
+### Metrics
 
 ```bash
 python evaluation/metrics/compute_metrics.py \
@@ -227,11 +234,12 @@ python evaluation/judge/llm_judge.py \
   --save-every 20
 ```
 
-如果少量行解析失败，使用同一个 `--output` 和 `--resume` 重新运行即可；脚本会复用已解析行，只补失败行。
+If a few rows fail to parse, rerun the same command with the same `--output` and
+`--resume`. The script reuses parsed rows and retries failed rows only.
 
-### 构造 DPO pair
+### Build DPO pairs
 
-先在 train split 上生成预测：
+Generate train-split predictions first:
 
 ```bash
 python evaluation/predict/predict_local_model.py \
@@ -242,7 +250,7 @@ python evaluation/predict/predict_local_model.py \
   --output results/predictions/ah_sft_train_pred_for_dpo.json
 ```
 
-然后构造 SPIN-style pairs：
+Then build SPIN-style pairs:
 
 ```bash
 python scripts/dpo/build_dpo_pairs_from_predictions.py \
@@ -256,24 +264,21 @@ python scripts/dpo/build_dpo_pairs_from_predictions.py \
 
 ### DPO
 
-设置 `configs/ah_dpo.yaml` 里的 `model.sft_adapter_path`，然后运行：
+Set `model.sft_adapter_path` in `configs/ah_dpo.yaml`, then run:
 
 ```bash
 python DPO/train_dpo.py --config configs/ah_dpo.yaml
 ```
 
-迭代 DPO 则先生成 DPO-v1 train predictions，构造 `cloud_data/ah_v2/dpo_iter2/`，
-设置 `configs/ah_dpo_iter2.yaml`，然后运行：
+For iterative DPO, generate DPO-v1 train predictions, build
+`cloud_data/ah_v2/dpo_iter2/`, set `configs/ah_dpo_iter2.yaml`, and run:
 
 ```bash
 python DPO/train_dpo.py --config configs/ah_dpo_iter2.yaml
 ```
 
-## 仓库卫生
+## Contributing and Contact
 
-`.gitignore` 会排除真实语料、完整生成数据、checkpoint、模型权重、结果 JSON、
-本地 `.env`、notebook 和临时文件。仓库只应该提交 toy examples 和源码。
+Issues, suggestions, and reproduction reports are welcome. If you run this pipeline on your own academic-writing data, feel free to open an issue and share your setup and evaluation results.
 
-## License
-
-MIT.
+Contact: 2812156857@qq.com
