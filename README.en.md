@@ -3,27 +3,27 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="#results">Results</a> · <a href="#quick-start">Quick Start</a> · <a href="#reproduce-the-pipeline">Reproduce</a>
+  <a href="README.md">中文</a> · <a href="#technical-pipeline">Technical Pipeline</a> · <a href="#results">Results</a> · <a href="#quick-start">Quick Start</a> · <a href="#reproduce-the-pipeline">Reproduce</a>
 </p>
 
 <p align="center">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.8%2B-12343B">
   <img alt="Model" src="https://img.shields.io/badge/Base-Qwen2.5--7B--Instruct-2D4F44">
-  <img alt="Training" src="https://img.shields.io/badge/Post--training-SFT%20%2B%20DPO-F2C14E">
+  <img alt="Training" src="https://img.shields.io/badge/Training-QLoRA%20SFT-F2C14E">
+  <img alt="Alignment" src="https://img.shields.io/badge/Alignment-SPIN--style%20DPO-2D4F44">
+  <img alt="Evaluation" src="https://img.shields.io/badge/Eval-Metrics%20%2B%20LLM--Judge-12343B">
 </p>
 
 # Academic Humanize
 
-Academic Humanize is a post-training and evaluation pipeline for reducing
-AI-like academic prose while preserving meaning, terminology, numbers,
-citations, and logical relationships.
+Academic Humanize is a post-training project for academic English rewriting. Its goal is to turn "AI-style reduction" into a trainable, optimizable, and measurable engineering pipeline.
 
-The core task is simple:
+It is not just a prompt-based polishing script. The project covers data construction, QLoRA SFT, SPIN-style DPO, iterative DPO, automatic metrics, and LLM-as-Judge evaluation.
 
 ```text
-Input    : an over-polished, generic, AI-like academic paragraph
-Output   : a more natural scholarly rewrite
-Constraint: preserve semantic fidelity and domain terminology
+Input      : an over-polished, formulaic, AI-like academic paragraph
+Output     : a more natural scholarly rewrite
+Hard rules : preserve meaning, numbers, citations, terminology, conclusions, and logic
 ```
 
 <p align="center">
@@ -32,42 +32,50 @@ Constraint: preserve semantic fidelity and domain terminology
 
 ## Why this project
 
-Academic rewriting models often improve fluency by making the text more generic,
-more formulaic, or less faithful to the original claim. This project focuses on
-the trade-off between two objectives:
+General-purpose LLMs can make academic text more fluent, but they often introduce three problems:
 
-- semantic fidelity: the rewrite should not change facts, numbers, terminology, or logic;
-- human-like academic style: the rewrite should avoid common AI lexical markers and sentence templates.
+- More AI-like wording: frequent use of words such as `pivotal`, `underscore`, and templates such as `not only...but also...`.
+- Unstable semantics: claims, numeric details, terminology, citations, or logical strength may change during polishing.
+- Weak evaluation signals: BLEU, chrF, and BERTScore measure reference similarity, but they do not directly answer whether the rewrite reads like human scholarly English.
 
-## What is included
+This project focuses on a narrower and harder problem: reducing AI writing traces while keeping academic meaning safe.
 
-- `SFT/train.py`: QLoRA SFT training for Academic Humanize pairs.
-- `DPO/train_dpo.py`: DPO training from an SFT or previous DPO LoRA adapter.
-- `evaluation/predict/predict_local_model.py`: local model / LoRA prediction.
-- `evaluation/predict/predict_api.py`: API baseline prediction with resume and concurrency.
-- `evaluation/metrics/compute_metrics.py`: BLEU, chrF++, TER, BERTScore, and format diagnostics.
-- `evaluation/judge/llm_judge.py`: six-dimension LLM-as-Judge evaluation.
-- `scripts/dpo/build_dpo_pairs_from_predictions.py`: SPIN-style DPO pair construction.
-- `data/examples/`: tiny schema-compatible examples for smoke tests.
+## What you get
 
-The full paper corpus, generated training data, predictions, judge outputs,
-checkpoints, and model weights are intentionally not included.
+- A reproducible post-training pipeline for academic text humanization.
+- A lightweight RLHF / preference optimization example from SFT to DPO and iterative DPO.
+- A reusable evaluation stack: automatic metrics for semantic fidelity and LLM-as-Judge for naturalness, terminology, and edit value.
+- API baseline comparisons for understanding the gap between local 7B LoRA adapters and proprietary models.
+- A transferable data construction recipe: if you have AI-like inputs and human references, the pipeline can be adapted to other academic-writing scenarios.
 
-## Method
+## Technical Pipeline
 
-### SFT
+The core contribution is to decompose "AI-style reduction" into four operational modules.
 
-The SFT dataset uses pairs of AI-like academic drafts and human or high-quality
-reference rewrites:
+### 1. AH V2 data construction
+
+Training pairs are not simple "raw text -> polished text" pairs. Each sample has:
+
+```text
+input  = an AI-like academic draft
+output = a human or high-quality reference academic rewrite
+```
+
+The model therefore learns to move from formulaic, over-polished, AI-like prose back to more natural scholarly English.
+
+### 2. QLoRA SFT
+
+The SFT stage uses Qwen2.5-7B-Instruct as the base model and trains a low-cost LoRA adapter with QLoRA.
 
 ```text
 instruction + input -> output
 ```
 
-### DPO-v1: SPIN-style preference training
+This stage teaches the model the task format, terminology preservation, citation preservation, and the basic humanization style.
 
-DPO-v1 uses the current SFT model to generate a response for each training
-input. The preference pair is:
+### 3. SPIN-style DPO
+
+DPO-v1 does not require extra human preference labels. It asks the current SFT model to generate rejected responses:
 
 ```text
 prompt   = instruction + input
@@ -75,10 +83,11 @@ chosen   = human / high-quality reference
 rejected = SFT model prediction
 ```
 
-### DPO-v2: iterative DPO
+The intuition is simple: if the human reference is better than the current model output, the model can learn the preference gap between them. This creates on-policy negative samples at low cost.
 
-DPO-v2 repeats the same idea from the DPO-v1 model with more conservative
-hyperparameters:
+### 4. Iterative DPO
+
+DPO-v2 repeats the same recipe using DPO-v1 predictions as rejected responses, with a more conservative learning rate and beta:
 
 ```text
 prompt   = instruction + input
@@ -86,12 +95,25 @@ chosen   = human / high-quality reference
 rejected = DPO-v1 model prediction
 ```
 
+The rejected response is now closer to the model's current capability boundary, giving a finer preference signal. In the current experiments, DPO-v2 recovers more semantic fidelity while retaining most of the judge preference gain.
+
 ## Evaluation
 
-Automatic metrics measure closeness to the held-out reference. LLM-as-Judge
-measures subjective quality with a fixed six-dimension rubric.
+The project uses two layers of evaluation instead of relying on one score.
 
-Judge dimensions:
+### Automatic semantic metrics
+
+| Metric | Purpose | Role |
+|---|---|---|
+| BERTScore-F1 | Semantic similarity between prediction and reference | Primary |
+| chrF++ | Character-level preservation of terms and spelling | Auxiliary |
+| BLEU | Traditional n-gram overlap | Reference |
+| TER | Edit-distance style metric | Reference |
+| Format Violation | Empty output, malformed output, and obvious failures | Quality control |
+
+### LLM-as-Judge
+
+The judge uses a fixed prompt and six fixed dimensions, producing a total score from 0 to 8.
 
 | Dimension | Range | Meaning |
 |---|---:|---|
@@ -104,8 +126,7 @@ Judge dimensions:
 
 ## Results
 
-Held-out validation set: 346 Academic Humanize paragraphs. Judge model:
-`deepseek-v4-flash` with `evaluation/judge/prompts_fast.md`.
+Held-out validation set: 346 Academic Humanize paragraphs. Judge model: `deepseek-v4-flash` with `evaluation/judge/prompts_fast.md`.
 
 <p align="center">
   <img src="assets/results.svg" alt="SFT DPO result trade-off" width="100%">
@@ -137,12 +158,39 @@ Held-out validation set: 346 Academic Humanize paragraphs. Judge model:
 | DeepSeek-v4-flash | 0.7764 | 6.211 | 0.642 | 0.627 | 1.491 | 1.682 | 0.991 | 0.777 |
 | Gemini 3.1 Flash Lite | 0.8233 | 6.587 | 0.801 | 0.786 | 1.616 | 1.572 | 0.931 | 0.882 |
 
-### Main finding
+### Main findings
 
-SFT preserves the reference most strongly on automatic metrics. DPO-v1 improves
-judge preference but introduces semantic drift. DPO-v2 recovers much of the
-semantic fidelity while retaining most of the preference gain, making it the
-best local trade-off among the trained adapters.
+- SFT LoRA is closest to the reference on automatic semantic metrics, making it the most conservative model.
+- DPO-v1 significantly improves LLM-as-Judge preference scores, but sacrifices part of reference similarity.
+- DPO-v2 recovers much of the semantic metric performance while preserving the DPO preference gain. It is the best local trade-off among the trained 7B adapters.
+- Kimi-K2-Instruct scores very high on judge evaluation, but it is an API baseline. The main focus of this project is a reproducible, trainable, and iterative local post-training workflow.
+
+## Who is this for
+
+- Developers who want a practical example of SFT, DPO, and SPIN-style self-play alignment.
+- Researchers who want a small, reproducible LLM post-training project.
+- Builders working on academic writing, paper polishing, or AI text humanization.
+- Anyone interested in combining traditional NLP metrics with LLM-as-Judge evaluation.
+
+## Repository Structure
+
+```text
+academic-humanize/
+├── SFT/                         # QLoRA SFT training
+├── DPO/                         # DPO training from SFT or DPO adapter
+├── configs/                     # SFT, DPO, eval configs
+├── evaluation/
+│   ├── predict/                 # local/API prediction
+│   ├── metrics/                 # BLEU, chrF++, TER, BERTScore
+│   ├── judge/                   # LLM-as-Judge
+│   ├── leaderboard/             # report merging
+│   └── detector/                # optional detector sidecar
+├── scripts/dpo/                 # DPO pair construction tools
+├── data/examples/               # toy examples only
+└── assets/                      # README figures
+```
+
+The full paper corpus, generated training data, prediction files, judge outputs, checkpoints, and model weights are not included. The repository contains toy examples and reproducible code only.
 
 ## Quick Start
 
@@ -155,7 +203,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-For AutoDL / CUDA training, start from a PyTorch CUDA image and install:
+For AutoDL / CUDA training:
 
 ```bash
 pip install -r requirements_autodl.txt
@@ -234,8 +282,7 @@ python evaluation/judge/llm_judge.py \
   --save-every 20
 ```
 
-If a few rows fail to parse, rerun the same command with the same `--output` and
-`--resume`. The script reuses parsed rows and retries failed rows only.
+If a few rows fail to parse, rerun the same command with the same `--output` and `--resume`. The script reuses parsed rows and retries failed rows only.
 
 ### Build DPO pairs
 
@@ -270,8 +317,7 @@ Set `model.sft_adapter_path` in `configs/ah_dpo.yaml`, then run:
 python DPO/train_dpo.py --config configs/ah_dpo.yaml
 ```
 
-For iterative DPO, generate DPO-v1 train predictions, build
-`cloud_data/ah_v2/dpo_iter2/`, set `configs/ah_dpo_iter2.yaml`, and run:
+For iterative DPO, generate DPO-v1 train predictions, build `cloud_data/ah_v2/dpo_iter2/`, set `configs/ah_dpo_iter2.yaml`, and run:
 
 ```bash
 python DPO/train_dpo.py --config configs/ah_dpo_iter2.yaml

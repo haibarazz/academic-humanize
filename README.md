@@ -3,66 +3,79 @@
 </p>
 
 <p align="center">
-  <a href="README.en.md">English</a> · <a href="#实验结果">实验结果</a> · <a href="#快速开始">快速开始</a> · <a href="#复现流程">复现流程</a>
+  <a href="README.en.md">English</a> · <a href="#核心技术路线">核心技术路线</a> · <a href="#实验结果">实验结果</a> · <a href="#快速开始">快速开始</a> · <a href="#复现流程">复现流程</a>
 </p>
 
 <p align="center">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.8%2B-12343B">
   <img alt="Model" src="https://img.shields.io/badge/Base-Qwen2.5--7B--Instruct-2D4F44">
-  <img alt="Training" src="https://img.shields.io/badge/Post--training-SFT%20%2B%20DPO-F2C14E">
+  <img alt="Training" src="https://img.shields.io/badge/Training-QLoRA%20SFT-F2C14E">
+  <img alt="Alignment" src="https://img.shields.io/badge/Alignment-SPIN--style%20DPO-2D4F44">
+  <img alt="Evaluation" src="https://img.shields.io/badge/Eval-Metrics%20%2B%20LLM--Judge-12343B">
 </p>
 
 # Academic Humanize
 
-Academic Humanize 是一个面向学术英文润色的后训练与评测项目，目标是降低
-AI 味、模板感和过度润色痕迹，同时尽量保持语义、术语、数字、引用和逻辑关系不变。
+Academic Humanize 是一个面向学术英文改写的后训练项目，核心目标是把“去 AI 味”这件事做成一套可训练、可优化、可评测的工程闭环。
 
-核心任务：
+它不是一个简单的 prompt 润色脚本，而是一套完整流程：从学术语料构造 AI-like draft，到 QLoRA SFT，再到 SPIN-style DPO 和迭代 DPO，最后用自动语义指标与 LLM-as-Judge 同时评估语义保真和自然度。
 
 ```text
-输入：带有 AI 味、模板化、过度正式的学术段落
+输入：带有 AI 味、模板感、过度正式表达的学术段落
 输出：更自然、更像真人学者写作的学术英文
-约束：不改变原意，不丢术语、数字、引用和结论
+硬约束：不改变原意，不丢数字、引用、术语、结论和逻辑关系
 ```
 
 <p align="center">
   <img src="assets/pipeline.svg" alt="Academic Humanize pipeline" width="100%">
 </p>
 
-## 项目动机
+## 为什么做这个项目
 
-普通润色模型经常会把文本改得更流畅，但也更空泛、更模板化，甚至改变原文含义。
-这个项目关注两个目标之间的平衡：
+很多通用大模型可以把英文改得更流畅，但它们经常带来三个问题：
 
-- 语义保真：不能改错事实、数字、术语和逻辑。
-- 去 AI 味：减少常见 AI 词汇、套话和公式化句式。
+- 表达更像 AI：使用 `pivotal`、`underscore`、`not only...but also...` 等高频模板。
+- 语义不稳定：为了“更高级”而改动事实、强弱关系、数字、引用或术语。
+- 难以量化：传统 BLEU/chrF/BERTScore 只能看和 reference 的接近程度，不能直接判断“像不像真人学者写的”。
 
-## 仓库包含什么
+本项目关注的不是泛泛的 grammar correction，而是更窄、更难的任务：在保持学术语义安全的前提下，减少 AI 写作痕迹。
 
-- `SFT/train.py`：Academic Humanize 的 QLoRA SFT 训练脚本。
-- `DPO/train_dpo.py`：从 SFT 或上一轮 DPO LoRA 继续做 DPO。
-- `evaluation/predict/predict_local_model.py`：本地模型 / LoRA 推理。
-- `evaluation/predict/predict_api.py`：API baseline 推理，支持并发和断点续跑。
-- `evaluation/metrics/compute_metrics.py`：BLEU、chrF++、TER、BERTScore 和格式诊断。
-- `evaluation/judge/llm_judge.py`：六维 LLM-as-Judge 评测。
-- `scripts/dpo/build_dpo_pairs_from_predictions.py`：SPIN 风格 DPO pair 构造。
-- `data/examples/`：用于 smoke test 的极小 toy 数据。
+## 你可以从这个项目获得什么
 
-真实论文语料、完整训练数据、预测结果、judge 结果、checkpoint 和模型权重不随仓库发布。
+- 一套可复现的学术文本 humanization 后训练流程。
+- 一个从 SFT 到 DPO 再到迭代 DPO 的轻量 RLHF / preference optimization 示例。
+- 一个可直接复用的评测框架：自动指标负责语义保真，LLM-as-Judge 负责自然度、术语、编辑价值等主观质量。
+- 一组 API baseline 对比结果，用于判断本地 7B LoRA 和闭源模型的差距。
+- 可迁移的数据构造思路：只要你有“AI-like input”和“human reference”，就可以迁移到其他学术写作场景。
 
-## 方法
+## 核心技术路线
 
-### SFT
+本项目的关键技术含量在于把“去 AI 味”拆成四个可操作模块。
 
-SFT 数据由 AI-like draft 和 human/high-quality reference rewrite 组成：
+### 1. AH V2 数据构造
+
+训练样本不是简单的“原文 -> 润色文”。每条样本都包含：
+
+```text
+input  = 带有 AI 味的学术 draft
+output = 人写或高质量 reference 学术表达
+```
+
+这样模型学到的不是普通翻译或语法纠错，而是如何从模板化、过度润色、AI-like 的表达回到更自然的学术英文。
+
+### 2. QLoRA SFT
+
+SFT 阶段使用 Qwen2.5-7B-Instruct 作为基座，通过 QLoRA 训练低成本 LoRA adapter。
 
 ```text
 instruction + input -> output
 ```
 
-### DPO-v1：SPIN 风格偏好训练
+这一阶段主要让模型掌握任务格式、保留术语和引用，并学习基础的 humanization 风格。
 
-DPO-v1 用当前 SFT 模型对训练集 input 生成 response，然后构造偏好对：
+### 3. SPIN-style DPO
+
+DPO-v1 不额外依赖人工偏好标注，而是用当前 SFT 模型自己生成 rejected response：
 
 ```text
 prompt   = instruction + input
@@ -70,9 +83,11 @@ chosen   = human / high-quality reference
 rejected = SFT model prediction
 ```
 
-### DPO-v2：迭代 DPO
+逻辑是：如果人写 reference 比当前模型输出更好，就让模型继续学习两者之间的偏好差异。这相当于用模型自己的输出构造 on-policy 负样本，成本低，适合小项目快速迭代。
 
-DPO-v2 从 DPO-v1 出发，用更保守的超参数再做一轮：
+### 4. 迭代 DPO
+
+DPO-v2 继续使用 DPO-v1 的输出作为 rejected，并使用更保守的学习率和 beta：
 
 ```text
 prompt   = instruction + input
@@ -80,11 +95,25 @@ chosen   = human / high-quality reference
 rejected = DPO-v1 model prediction
 ```
 
+这样 rejected 会更接近当前模型能力边界，学习信号比第一轮更细。实验结果显示，DPO-v2 在保留 judge 偏好收益的同时，恢复了更多语义指标。
+
 ## 评测框架
 
-自动指标衡量 prediction 和 reference 的接近程度；LLM-as-Judge 衡量主观改写质量。
+本项目没有只看一个分数，而是把评测拆成两层。
 
-Judge 六个维度如下：
+### 自动语义指标
+
+| 指标 | 作用 | 定位 |
+|---|---|---|
+| BERTScore-F1 | 衡量 prediction 和 reference 的语义接近程度 | 主指标 |
+| chrF++ | 对术语、拼写和字符级保留敏感 | 辅助指标 |
+| BLEU | 传统 n-gram overlap | 参考 |
+| TER | 编辑距离类指标 | 参考 |
+| Format Violation | 检查空输出、异常格式和明显失败输出 | 质量控制 |
+
+### LLM-as-Judge
+
+Judge 使用固定 prompt 和固定六维 rubric，输出 0 到 8 的总分。
 
 | 维度 | 分值 | 含义 |
 |---|---:|---|
@@ -97,8 +126,7 @@ Judge 六个维度如下：
 
 ## 实验结果
 
-验证集包含 346 条 Academic Humanize 段落。Judge 模型为 `deepseek-v4-flash`，
-prompt 使用 `evaluation/judge/prompts_fast.md`。
+验证集包含 346 条 Academic Humanize 段落。Judge 模型为 `deepseek-v4-flash`，prompt 使用 `evaluation/judge/prompts_fast.md`。
 
 <p align="center">
   <img src="assets/results.svg" alt="SFT DPO result trade-off" width="100%">
@@ -132,9 +160,37 @@ prompt 使用 `evaluation/judge/prompts_fast.md`。
 
 ### 主要结论
 
-SFT 在自动语义指标上最接近 reference。DPO-v1 明显提高 judge 偏好分数，
-但带来一定语义漂移。DPO-v2 恢复了大部分语义指标，同时保留了大部分偏好收益，
-因此是本项目当前本地训练模型里最好的折中版本。
+- SFT LoRA 在自动语义指标上最接近 reference，说明它最稳地保留了原始语义。
+- DPO-v1 明显提高 LLM-as-Judge 偏好分数，但会牺牲一部分 reference 接近度。
+- DPO-v2 恢复了大部分语义指标，同时保留了 DPO 的偏好收益，是当前本地 7B adapter 里的最佳折中版本。
+- Kimi-K2-Instruct 的 judge 分数很高，但它是 API baseline；本项目的重点是复现一套可训练、可迭代的本地后训练流程。
+
+## 适合谁
+
+- 想了解 SFT、DPO、SPIN-style self-play alignment 的实践流程。
+- 想复现一个小成本、可解释的 LLM 后训练项目。
+- 想做学术写作、论文润色、AI text humanization 方向的实验。
+- 想把 LLM-as-Judge 和传统 NLP 指标结合起来做评测。
+
+## 项目结构
+
+```text
+academic-humanize/
+├── SFT/                         # QLoRA SFT training
+├── DPO/                         # DPO training from SFT or DPO adapter
+├── configs/                     # SFT, DPO, eval configs
+├── evaluation/
+│   ├── predict/                 # local/API prediction
+│   ├── metrics/                 # BLEU, chrF++, TER, BERTScore
+│   ├── judge/                   # LLM-as-Judge
+│   ├── leaderboard/             # report merging
+│   └── detector/                # optional detector sidecar
+├── scripts/dpo/                 # DPO pair construction tools
+├── data/examples/               # toy examples only
+└── assets/                      # README figures
+```
+
+真实论文语料、完整训练数据、预测结果、judge 结果、checkpoint 和模型权重不随仓库发布。仓库只保留 toy examples 和可复现代码。
 
 ## 快速开始
 
@@ -261,8 +317,7 @@ python scripts/dpo/build_dpo_pairs_from_predictions.py \
 python DPO/train_dpo.py --config configs/ah_dpo.yaml
 ```
 
-迭代 DPO 则先生成 DPO-v1 train predictions，构造 `cloud_data/ah_v2/dpo_iter2/`，
-设置 `configs/ah_dpo_iter2.yaml`，然后运行：
+迭代 DPO 则先生成 DPO-v1 train predictions，构造 `cloud_data/ah_v2/dpo_iter2/`，设置 `configs/ah_dpo_iter2.yaml`，然后运行：
 
 ```bash
 python DPO/train_dpo.py --config configs/ah_dpo_iter2.yaml
