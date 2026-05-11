@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="#technical-pipeline">Technical Pipeline</a> · <a href="#results">Results</a> · <a href="#quick-start">Quick Start</a> · <a href="#reproduce-the-pipeline">Reproduce</a>
+  <a href="README.md">中文</a> · <a href="https://huggingface.co/XiaoXu123123/academic-humanize-qwen25-7b-dpo-v2-lora">Hugging Face Adapter</a> · <a href="#technical-pipeline">Technical Pipeline</a> · <a href="#results">Results</a> · <a href="#quick-start">Quick Start</a> · <a href="#reproduce-the-pipeline">Reproduce</a>
 </p>
 
 <p align="center">
@@ -37,6 +37,7 @@ Hard rules : preserve meaning, numbers, citations, terminology, conclusions, and
 - **Low-cost preference data**: current model outputs become rejected responses, while human references become chosen responses.
 - **Two-layer evaluation**: BERTScore-F1, chrF++, BLEU, TER, format diagnostics, and a six-dimensional LLM-as-Judge rubric.
 - **Comparable baselines**: SFT, DPO-v1, DPO-v2, and multiple API models are evaluated under the same pipeline.
+- **Released model weights**: the DPO-v2 LoRA adapter is available on [Hugging Face](https://huggingface.co/XiaoXu123123/academic-humanize-qwen25-7b-dpo-v2-lora) and can be loaded with `Qwen/Qwen2.5-7B-Instruct`.
 
 ## My Contributions
 
