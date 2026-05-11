@@ -18,7 +18,7 @@
 
 Academic Humanize is a post-training project for academic English rewriting. Its goal is to turn "AI-style reduction" into a trainable, optimizable, and measurable engineering pipeline.
 
-The project covers data construction, QLoRA SFT, SPIN-style DPO, iterative DPO, automatic metrics, and LLM-as-Judge evaluation.
+The project covers paper PDF/Markdown preparation, paragraph extraction, quality filtering, AI-like draft construction, QLoRA SFT, SPIN-style DPO, iterative DPO, automatic metrics, and LLM-as-Judge evaluation.
 
 ```text
 Input      : an over-polished, formulaic, AI-like academic paragraph
@@ -41,7 +41,7 @@ Hard rules : preserve meaning, numbers, citations, terminology, conclusions, and
 
 ## My Contributions
 
-- I designed the Academic Humanize V2 data format: `instruction + AI-like input -> human reference output`.
+- I designed the paragraph-level Academic Humanize data format: `instruction + AI-like input -> human reference output`.
 - I implemented QLoRA SFT training, LoRA prediction, API baseline prediction, resume support, and concurrent API calls.
 - I built the SPIN-style DPO pair construction flow and completed the DPO-v1 and iterative DPO-v2 training loop.
 - I built the automatic metrics and LLM-as-Judge evaluation stack with fixed prompts and six scoring dimensions.
@@ -71,20 +71,47 @@ This project focuses on a narrower and harder problem: reducing AI writing trace
 
 ## Technical Pipeline
 
-The core contribution is to decompose "AI-style reduction" into four operational modules.
+The core contribution is to decompose academic AI-style reduction into five operational stages: corpus preparation, data construction, SFT, DPO, and evaluation.
 
-### 1. AH V2 data construction
+### 1. Corpus preparation: from PDF to paragraph inventory
 
-Training pairs follow an "AI-like draft -> human reference" structure. Each sample has:
+The data pipeline starts from real academic papers, mainly collected from journals in management and information systems (IS). I convert the paper PDFs into processable Markdown/JSON text, then extract paragraph-level academic prose from the structured papers.
+
+The pipeline is:
 
 ```text
-input  = an AI-like academic draft
-output = a human or high-quality reference academic rewrite
+paper PDF
+-> Markdown / structured JSON
+-> section split
+-> paragraph extraction
+-> quality filtering
+-> paragraph inventory
 ```
 
-The model therefore learns to move from formulaic, over-polished, AI-like prose back to more natural scholarly English.
+This stage does four main things:
 
-### 2. QLoRA SFT
+- Splits papers by section titles and prioritizes abstract, introduction, related work, results, discussion, and conclusion sections.
+- Filters references, appendices, acknowledgements, experiment setup details, metric lists, table-heavy paragraphs, equation-heavy paragraphs, and obvious metadata.
+- Cleans OCR noise, mojibake, copyright lines, citation instructions, broken fragments, and paragraphs that are too short or too long.
+- Keeps metadata such as `paper_id`, `section_title`, `paragraph_id`, word count, sentence count, and quality signals for paper-level splitting and leakage checks.
+
+The open-source repository only includes toy examples and processing scripts. The full paper corpus, extracted real paragraphs, and full training data are not released.
+
+### 2. Academic Humanize data construction
+
+After obtaining high-quality human paragraphs, I call an LLM to rewrite each paragraph into an AI-like academic draft. The final training sample has this structure:
+
+```text
+instruction = preserve meaning, numbers, citations, and terminology while reducing AI-like wording
+input       = an AI-like academic draft
+output      = the human reference academic paragraph
+```
+
+This direction is deliberate: `output` comes from real paper paragraphs and is more stable as a reference, while `input` is a controlled AI-like draft with templated phrasing, inflated academic vocabulary, nominalization, and mechanical sentence structures. During training, the model learns to convert AI-like academic paragraphs back into more natural scholarly writing.
+
+Generated draft candidates are filtered with deterministic checks for number/citation/term preservation, length ratio, semantic relatedness, edit value, and humanization gap. The final train/validation split is done at the paper level to avoid leakage across splits.
+
+### 3. QLoRA SFT
 
 The SFT stage uses Qwen2.5-7B-Instruct as the base model and trains a low-cost LoRA adapter with QLoRA.
 
@@ -94,7 +121,7 @@ instruction + input -> output
 
 This stage teaches the model the task format, terminology preservation, citation preservation, and the basic humanization style.
 
-### 3. SPIN-style DPO
+### 4. SPIN-style DPO
 
 DPO-v1 does not require extra human preference labels. It asks the current SFT model to generate rejected responses:
 
@@ -106,7 +133,7 @@ rejected = SFT model prediction
 
 The intuition is simple: if the human reference is better than the current model output, the model can learn the preference gap between them. This creates on-policy negative samples at low cost.
 
-### 4. Iterative DPO
+### 5. Iterative DPO
 
 DPO-v2 repeats the same recipe using DPO-v1 predictions as rejected responses, with a more conservative learning rate and beta:
 
