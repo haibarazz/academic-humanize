@@ -95,7 +95,7 @@ paper PDF
 - 清理 OCR 噪声、乱码、版权行、引用说明、残缺句子、过短或过长段落。
 - 为每个段落保留 `paper_id`、`section_title`、`paragraph_id`、词数、句子数和质量信号，方便后续做 paper-level split 和泄漏检查。
 
-开源仓库只提供 toy examples 和处理脚本；完整论文语料、抽取后的真实段落和训练数据不随仓库发布。
+我在开源仓库里只提供 toy examples 和处理脚本，没有发布原始论文 PDF、抽取后的真实段落和完整训练数据。你可以沿用这套流程，并按自己的研究领域选择对应的论文语料库。
 
 ### 2. Academic Humanize 数据构造
 
@@ -260,15 +260,15 @@ academic-humanize/
 └── assets/                      # README figures
 ```
 
-真实论文语料、完整训练数据、预测结果、judge 结果、checkpoint 和模型权重不随仓库发布。仓库只保留 toy examples 和可复现代码。
+我在仓库里只保留 toy examples 和可复现代码；真实论文语料、完整训练数据、预测结果、judge 结果、checkpoint 和大文件权重不会放进 GitHub。DPO-v2 LoRA adapter 已单独上传到 Hugging Face。
 
 ## 局限性
 
-- 完整论文语料、训练数据和 checkpoint 不随仓库发布；仓库提供 toy examples 和可复现脚本。
-- LLM-as-Judge 无法替代人工评审，因此本项目同时保留自动语义指标做交叉验证。
-- 当前验证集规模为 346 条 Academic Humanize 样本，迁移到其他学科或写作风格时需要重新评估。
-- DPO 会提升偏好分数，也可能带来语义漂移；DPO-v2 的目标是缓解这个风险，仍需要结合语义指标一起判断。
-- API baseline 会受到供应商、模型版本和路由策略影响，结果应作为参考而非永久结论。
+- 我没有发布原始论文 PDF、完整训练数据和训练 checkpoint；仓库中只保留 toy examples 和可复现脚本，方便其他人替换成自己领域的语料库。
+- 我使用 LLM-as-Judge 做结构化评测，但它无法替代人工评审，所以我同时保留 BERTScore-F1、chrF++、BLEU、TER 等自动语义指标做交叉验证。
+- 我目前的验证集规模是 346 条 Academic Humanize 样本；如果迁移到其他学科、期刊类型或写作风格，需要重新评估。
+- 我观察到 DPO 可以提升偏好分数，也可能带来语义漂移；DPO-v2 主要用于缓解这个风险，最终仍需要结合语义指标和样例检查一起判断。
+- 我使用 API baseline 做横向对比，但这类结果会受到供应商、模型版本和路由策略影响，更适合作为阶段性参考。
 
 ## 快速开始
 

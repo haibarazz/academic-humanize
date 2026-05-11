@@ -95,7 +95,7 @@ This stage does four main things:
 - Cleans OCR noise, mojibake, copyright lines, citation instructions, broken fragments, and paragraphs that are too short or too long.
 - Keeps metadata such as `paper_id`, `section_title`, `paragraph_id`, word count, sentence count, and quality signals for paper-level splitting and leakage checks.
 
-The open-source repository only includes toy examples and processing scripts. The full paper corpus, extracted real paragraphs, and full training data are not released.
+I only include toy examples and processing scripts in this open-source repository. I do not release the source paper PDFs, extracted real paragraphs, or full training data. You can reuse the same pipeline with a corpus from your own research domain.
 
 ### 2. Academic Humanize data construction
 
@@ -260,15 +260,15 @@ academic-humanize/
 └── assets/                      # README figures
 ```
 
-The full paper corpus, generated training data, prediction files, judge outputs, checkpoints, and model weights are not included. The repository contains toy examples and reproducible code only.
+I keep only toy examples and reproducible code in this repository. The source paper corpus, full training data, prediction files, judge outputs, checkpoints, and large model artifacts are kept out of GitHub. The DPO-v2 LoRA adapter is released separately on Hugging Face.
 
 ## Limitations
 
-- The full paper corpus, training data, and checkpoints are not released; this repository provides toy examples and reproducible scripts.
-- LLM-as-Judge is not a replacement for human evaluation, so automatic semantic metrics are kept for cross-checking.
-- The current validation set contains 346 Academic Humanize samples; new domains or writing styles should be re-evaluated.
-- DPO improves preference scores but can introduce semantic drift. DPO-v2 mitigates this risk but does not eliminate it.
-- API baselines can change with provider routing, model versions, and serving behavior, so they should be treated as reference points.
+- I do not release the source paper PDFs, full training data, or training checkpoints. The repository keeps toy examples and reproducible scripts so others can replace the corpus with papers from their own domain.
+- I use LLM-as-Judge for structured evaluation, but it cannot replace human review. I therefore keep BERTScore-F1, chrF++, BLEU, TER, and other automatic semantic metrics for cross-checking.
+- My current validation set contains 346 Academic Humanize samples. New disciplines, journal types, or writing styles should be re-evaluated.
+- I observed that DPO can improve preference scores while introducing semantic drift. DPO-v2 is mainly used to reduce this risk, and final conclusions still need semantic metrics and sample-level inspection.
+- I use API baselines for comparison, but their results can change with provider routing, model versions, and serving behavior, so they are best treated as stage-specific reference points.
 
 ## Quick Start
 
