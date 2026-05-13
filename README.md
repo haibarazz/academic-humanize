@@ -99,7 +99,9 @@ paper PDF
 
 ### 2. Academic Humanize 数据构造
 
-有了高质量 human paragraph 之后，我再调用 LLM 把它改写成带 AI 味的 academic draft。最终训练样本采用下面的结构：
+数据构造是这个项目最核心的部分。我先从真实论文中抽取高质量 human paragraph，把它作为稳定的质量锚点，再反向生成一个语义一致但带有 AI 味的 academic draft。这样每条样本都有明确的学习方向：从模板化、过度润色、机械连接的表达，回到自然、准确、领域术语稳定的学术英文。
+
+最终训练样本采用下面的结构：
 
 ```text
 instruction = 保持原意、数字、引用和术语，降低 AI 味
@@ -107,9 +109,24 @@ input       = 带有 AI 味的学术 draft
 output      = human reference 学术段落
 ```
 
-这个方向是刻意设计的：`output` 来自真实论文段落，质量更稳定；`input` 是受控生成的 AI-like draft，包含模板化表达、过度正式词汇、名词化和机械句式。模型训练时学习的是把 AI-like academic paragraph 改回更自然的 scholarly writing。
+这里的 `output` 来自真实论文段落或高质量 reference，负责提供语义、术语和写作风格的上限；`input` 是受控生成的 AI-like draft，负责提供模型需要修正的问题。这个设计让 SFT 可以学习具体的编辑映射，也让后续 DPO 可以围绕同一个 prompt 比较不同 response 的质量差异。
 
-候选 draft 生成后还会经过规则筛选，重点检查数字/引用/术语保留、长度比例、语义相关性、编辑价值和 humanization gap。最终 train/val 使用 paper-level split，避免同一篇论文的段落同时进入训练集和验证集。
+AI-like draft 采用受控生成。我在 prompt 中显式控制它保留原文含义，同时加入适度的 AI 写作痕迹，例如：
+
+- 高频 AI lexical markers：`underscore`、`pivotal`、`intricate`、`leverage`、`delve into`、`taken together` 等。
+- 模板化结构：双重并列句式、泛化结尾句、机械过渡词、过度名词化表达。
+- 过度正式的 academic polish：表达流畅但略显泛化，读起来像普通 LLM 生成的学术改写。
+- 语义保护约束：保留数字、年份、引用、缩写、专有名词、技术术语和因果逻辑。
+
+候选 draft 生成后还会经过质量筛选，避免把语义错误样本放进训练集。筛选重点包括：
+
+- 数字、引用、缩写和术语是否完整保留。
+- draft 与 reference 的长度比例是否合理。
+- draft 是否保留原文核心结论和逻辑关系。
+- draft 是否真的带有可学习的 AI-like 痕迹。
+- reference 与 draft 之间是否存在足够的 humanization gap。
+
+最终 train/val 使用 paper-level split，避免同一篇论文的段落同时进入训练集和验证集。这样评测时更接近真实迁移场景：模型需要处理训练集之外的论文表达，降低相邻段落记忆带来的评估偏差。
 
 ### 3. QLoRA SFT
 
