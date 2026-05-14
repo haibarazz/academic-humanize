@@ -1,0 +1,132 @@
+name: binary24
+report_type: ah_judge_binary24_report_v1
+prompt_file: evaluation/judge/prompts/binary24.md
+prompt_version: ah_judge_binary24_v1
+max_total: 24
+default_max_tokens: 2200
+response_instruction: Evaluate OUTPUT on all 24 binary dimensions. Use 1=pass and 0=issue. Respond only with JSON.
+score_schema:
+  total_rule: all dimensions are binary; total is the sum of pass flags
+  dimension_rule: 1=pass, 0=issue; not applicable dimensions pass
+  hard_fail_rule: hard_fail is true when any M_meaning_safety dimension is 0
+blocks:
+  M_meaning_safety:
+    label: Meaning and factual safety
+    dimensions:
+      - m1_meaning_preserved
+      - m2_key_claims_preserved
+      - m3_no_unsupported_addition
+      - m4_logic_relations_preserved
+      - m5_numbers_citations_entities_preserved
+      - m6_terms_methods_preserved
+  V_vocabulary:
+    label: AI vocabulary and template language
+    dimensions:
+      - v1_tier1_ai_words_absent
+      - v2_tier2_ai_words_not_dense
+      - v3_template_phrases_absent
+      - v4_promotional_puffery_absent
+  S_structure:
+    label: Sentence and structure patterns
+    dimensions:
+      - s1_participial_tail_not_overused
+      - s2_nominalization_not_overused
+      - s3_negative_parallelism_absent
+      - s4_rule_of_three_or_adjective_stack_absent
+      - s5_elegant_variation_absent
+  D_discourse:
+    label: Discourse and academic voice
+    dimensions:
+      - d1_hedging_calibrated
+      - d2_vague_attribution_absent
+      - d3_generic_conclusion_absent
+      - d4_density_and_concision_preserved
+      - d5_academic_register_natural
+  E_editing_format:
+    label: Editing quality and formatting
+    dimensions:
+      - e1_substantive_edit_value
+      - e2_not_overedited
+      - e3_formulaic_transition_absent
+      - e4_formatting_artifacts_absent
+dimensions:
+  - name: m1_meaning_preserved
+    min: 0
+    max: 1
+  - name: m2_key_claims_preserved
+    min: 0
+    max: 1
+  - name: m3_no_unsupported_addition
+    min: 0
+    max: 1
+  - name: m4_logic_relations_preserved
+    min: 0
+    max: 1
+  - name: m5_numbers_citations_entities_preserved
+    min: 0
+    max: 1
+  - name: m6_terms_methods_preserved
+    min: 0
+    max: 1
+  - name: v1_tier1_ai_words_absent
+    min: 0
+    max: 1
+  - name: v2_tier2_ai_words_not_dense
+    min: 0
+    max: 1
+  - name: v3_template_phrases_absent
+    min: 0
+    max: 1
+  - name: v4_promotional_puffery_absent
+    min: 0
+    max: 1
+  - name: s1_participial_tail_not_overused
+    min: 0
+    max: 1
+  - name: s2_nominalization_not_overused
+    min: 0
+    max: 1
+  - name: s3_negative_parallelism_absent
+    min: 0
+    max: 1
+  - name: s4_rule_of_three_or_adjective_stack_absent
+    min: 0
+    max: 1
+  - name: s5_elegant_variation_absent
+    min: 0
+    max: 1
+  - name: d1_hedging_calibrated
+    min: 0
+    max: 1
+  - name: d2_vague_attribution_absent
+    min: 0
+    max: 1
+  - name: d3_generic_conclusion_absent
+    min: 0
+    max: 1
+  - name: d4_density_and_concision_preserved
+    min: 0
+    max: 1
+  - name: d5_academic_register_natural
+    min: 0
+    max: 1
+  - name: e1_substantive_edit_value
+    min: 0
+    max: 1
+  - name: e2_not_overedited
+    min: 0
+    max: 1
+  - name: e3_formulaic_transition_absent
+    min: 0
+    max: 1
+  - name: e4_formatting_artifacts_absent
+    min: 0
+    max: 1
+hard_fail:
+  any_zero:
+    - m1_meaning_preserved
+    - m2_key_claims_preserved
+    - m3_no_unsupported_addition
+    - m4_logic_relations_preserved
+    - m5_numbers_citations_entities_preserved
+    - m6_terms_methods_preserved

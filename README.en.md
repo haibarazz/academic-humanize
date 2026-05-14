@@ -35,7 +35,7 @@ Hard rules : preserve meaning, numbers, citations, terminology, conclusions, and
 - **Local 7B post-training loop**: QLoRA SFT, SPIN-style DPO, and iterative DPO on Qwen2.5-7B-Instruct, with API baselines for comparison.
 - **Sharper task definition**: academic AI-style reduction is decomposed into AI-like draft construction, semantic fidelity, terminology preservation, naturalness, and edit value.
 - **Low-cost preference data**: current model outputs become rejected responses, while human references become chosen responses.
-- **Two-layer evaluation**: BERTScore-F1, chrF++, BLEU, TER, format diagnostics, and a six-dimensional LLM-as-Judge rubric.
+- **Two-layer evaluation**: BERTScore-F1, chrF++, BLEU, TER, format diagnostics, a six-dimensional LLM-as-Judge rubric, and a finer Binary24 judge.
 - **Comparable baselines**: SFT, DPO-v1, DPO-v2, and multiple API models are evaluated under the same pipeline.
 - **Released model weights**: the DPO-v2 LoRA adapter is available on [Hugging Face](https://huggingface.co/XiaoXu123123/academic-humanize-qwen25-7b-dpo-v2-lora) and can be loaded with `Qwen/Qwen2.5-7B-Instruct`.
 
@@ -44,7 +44,7 @@ Hard rules : preserve meaning, numbers, citations, terminology, conclusions, and
 - I designed the paragraph-level Academic Humanize data format: `instruction + AI-like input -> human reference output`.
 - I implemented QLoRA SFT training, LoRA prediction, API baseline prediction, resume support, and concurrent API calls.
 - I built the SPIN-style DPO pair construction flow and completed the DPO-v1 and iterative DPO-v2 training loop.
-- I built the automatic metrics and LLM-as-Judge evaluation stack with fixed prompts and six scoring dimensions.
+- I built the automatic metrics and LLM-as-Judge evaluation stack with fixed prompts and schemas for both 6D and Binary24 rubrics.
 - I packaged the open-source version with toy examples, configs, training scripts, evaluation scripts, and README visuals.
 
 ## Why this project
@@ -179,7 +179,9 @@ The project uses two layers of evaluation to cover semantic fidelity and subject
 
 ### LLM-as-Judge
 
-The judge uses a fixed prompt and six fixed dimensions, producing a total score from 0 to 8.
+The judge now keeps two rubrics: a 6D scoring rubric for continuity with earlier experiments, and a Binary24 rubric for fine-grained error profiling.
+
+**6D Judge** produces a total score from 0 to 8 across six dimensions:
 
 | Dimension | Range | Meaning |
 |---|---:|---|
@@ -190,17 +192,34 @@ The judge uses a fixed prompt and six fixed dimensions, producing a total score 
 | terminology accuracy | 0-1 | Preserves and uses domain terms correctly |
 | edit value | 0-1 | Measures whether the rewrite provides a meaningful improvement |
 
+**Binary24 Judge** produces a total score from 0 to 24. Each dimension is binary: `1=pass`, `0=issue`.
+
+| Block | Dimensions | Focus |
+|---|---:|---|
+| Meaning Safety | 6 | Meaning, claims, logic, numbers, citations, entities, and terminology |
+| Vocabulary | 4 | AI-style words, template phrases, and promotional puffery |
+| Structure | 5 | Formulaic structures, adjective stacks, and unnecessary variation |
+| Discourse | 5 | Hedging, attribution, conclusion, density, and academic register |
+| Editing | 4 | Edit value, over-editing, transitions, and formatting artifacts |
+
+Binary24 is designed to make judging more stable because the judge makes binary decisions rather than fine-grained scalar ratings. `hard_fail` is triggered when any core Meaning Safety dimension fails.
+
 ## Prompt Assets
 
 Prompts are maintained as versioned experimental assets:
 
-- `evaluation/judge/prompts.md`: full judge prompt with the AI-writing word bank, structural patterns, and scoring rubric.
-- `evaluation/judge/prompts_fast.md`: compact judge prompt used for full-scale evaluation.
+- `evaluation/judge/prompts/judge_6d.md`: full 6D judge prompt with the AI-writing word bank, structural patterns, and scoring rubric.
+- `evaluation/judge/prompts/judge_6d_fast.md`: compact 6D judge prompt used for full-scale evaluation.
+- `evaluation/judge/prompts/binary24.md`: 24-dimensional binary judge prompt for fine-grained error profiling.
+- `evaluation/judge/schemas/judge_6d.yaml`: structured schema for the 6D judge.
+- `evaluation/judge/schemas/binary24.yaml`: structured schema for the Binary24 judge.
 - `scripts/dpo/prompt.md`: optional controlled rejected-candidate prompt for generating AI-like but semantically close DPO negatives.
+
+Legacy `evaluation/judge/prompts.md` and `evaluation/judge/prompts_fast.md` are kept for compatibility. New experiments should use the `prompts/` and `schemas/` directories.
 
 ## Results
 
-Held-out validation set: 346 Academic Humanize paragraphs. Judge model: `deepseek-v4-flash` with `evaluation/judge/prompts_fast.md`.
+Held-out validation set: 346 Academic Humanize paragraphs. Both 6D Judge and Binary24 Judge use `deepseek-v4-flash` with fixed prompts and schemas for comparability.
 
 ### Automatic Metrics
 
@@ -228,12 +247,25 @@ Held-out validation set: 346 Academic Humanize paragraphs. Judge model: `deepsee
 | DeepSeek-v4-flash | 0.7764 | 6.211 | 0.642 | 0.627 | 1.491 | 1.682 | 0.991 | 0.777 |
 | Gemini 3.1 Flash Lite | 0.8233 | 6.587 | 0.801 | 0.786 | 1.616 | 1.572 | 0.931 | 0.882 |
 
+### Binary24 LLM-as-Judge
+
+Binary24 evaluates each output with 24 binary dimensions. `Norm` is total divided by 24. `Hard Fail` indicates at least one core meaning-safety failure.
+
+| Model | Binary24 Norm | Total | Hard Fail | Meaning Safety | Vocabulary | Structure | Discourse | Editing |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| DPO-v2 LoRA | 0.9806 | 23.5347 | 0.0838 | 0.9812 | 0.9754 | 0.9936 | 0.9861 | 0.9617 |
+| SFT LoRA | 0.9766 | 23.4393 | 0.0347 | 0.9933 | 0.9429 | 0.9879 | 0.9861 | 0.9595 |
+| Kimi-K2-Instruct | 0.9498 | 22.7948 | 0.2283 | 0.9475 | 0.9603 | 0.9815 | 0.9220 | 0.9379 |
+| Qwen2.5-7B Base | 0.6325 | 15.1792 | 0.5694 | 0.4981 | 0.7392 | 0.8647 | 0.6370 | 0.4314 |
+
 ### Main findings
 
 - SFT LoRA is closest to the reference on automatic semantic metrics, making it the most conservative model.
-- DPO-v1 significantly improves LLM-as-Judge preference scores, but sacrifices part of reference similarity.
-- DPO-v2 recovers much of the semantic metric performance while preserving the DPO preference gain. It is the best local trade-off among the trained 7B adapters.
-- Kimi-K2-Instruct scores very high on judge evaluation, but it is an API baseline. The main focus of this project is a reproducible, trainable, and iterative local post-training workflow.
+- DPO-v1 significantly improves 6D LLM-as-Judge preference scores, but sacrifices part of reference similarity.
+- DPO-v2 recovers much of the semantic metric performance and obtains the highest Binary24 score. It is the best local trade-off among the trained 7B adapters.
+- SFT has the highest Binary24 Meaning Safety score, so it remains the strongest local baseline for semantic preservation.
+- Kimi-K2-Instruct scores very high on the 6D judge, but Binary24 shows a higher hard-fail rate. This suggests strong naturalness with a higher need for semantic safety checks.
+- Qwen2.5-7B Base is far behind, showing that task-specific post-training is necessary for stable academic humanization.
 
 ## Who is this for
 
@@ -252,7 +284,7 @@ academic-humanize/
 ├── evaluation/
 │   ├── predict/                 # local/API prediction
 │   ├── metrics/                 # BLEU, chrF++, TER, BERTScore
-│   ├── judge/                   # LLM-as-Judge
+│   ├── judge/                   # schema-driven LLM-as-Judge, prompts, rubrics
 │   ├── leaderboard/             # report merging
 │   └── detector/                # optional detector sidecar
 ├── scripts/dpo/                 # DPO pair construction tools
@@ -349,18 +381,18 @@ python evaluation/metrics/compute_metrics.py \
 
 ```bash
 python evaluation/judge/llm_judge.py \
+  --schema evaluation/judge/schemas/binary24.yaml \
   --report-file results/predictions/ah_sft_val_pred.json \
   --api-model deepseek-v4-flash \
-  --prompt-file evaluation/judge/prompts_fast.md \
   --max-samples 0 \
-  --max-concurrency 4 \
-  --max-tokens 1200 \
-  --output results/judge/ah_judge_sft_deepseek_v4_flash.json \
+  --max-concurrency 2 \
+  --max-tokens 4096 \
+  --output results/judge/ah_judge_binary24_sft_deepseek_v4_flash.json \
   --resume \
   --save-every 20
 ```
 
-If a few rows fail to parse, rerun the same command with the same `--output` and `--resume`. The script reuses parsed rows and retries failed rows only.
+If a few rows fail to parse, rerun the same command with the same `--output` and `--resume`. The script reuses parsed rows and retries failed rows only. To reproduce the earlier 6D judge, use `--schema evaluation/judge/schemas/judge_6d.yaml`.
 
 ### Build DPO pairs
 
